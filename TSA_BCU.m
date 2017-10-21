@@ -5,13 +5,13 @@ clear; close all;
 sys_case=9; % IEEE system
 fault_line=4; % Line number of the faulted line
 fault_frto_bus=1; % From or To bus where the fault is applied
-t_cl=0.169; % clearing time
+t_cl=0.15; % clearing time
 
 % Time domain simulation setting
 t_end=20; % end time for time domain simulation (tds)
 del_t=0.05; % times tep for tds
 del_t_fault=0.001; % times step for fault tds
-del_t_BCU=0.01; % times step for fault tds
+del_t_BCU=0.01; % times step for BCU tds
 t_fault=0; % time that the fault is applied
 
 % Plot setting for phase portrait
@@ -30,7 +30,8 @@ idx_delta=1:num_gen; idx_omega=num_gen+1:2*num_gen; num_var=2*num_gen;
 
 M_gen=Syn.con(:,18)./(2*pi*Syn.con(:,4));
 M_T=sum(M_gen);
-D_gen=Syn.con(:,19);
+Syn.con(:,19)=2*ones(size(Syn.con(:,19))); % Add damping
+D_gen=Syn.con(:,19)./(2*pi*Syn.con(:,4));
 v_gen=[SW.con(:,4); PV.con(:,5)];
 xd_p=Syn.con(:,9);
 line_frto=Line.con(:,1:2);
@@ -53,6 +54,7 @@ YN_fault=YN_pre;
 Zf_line=Z_line; Zf_line(fault_line)=inf;
 YN_post=E'*diag(Zf_line.^-1)*E+diag(y_load);
 
+% Include stator impedence for network reduction
 Y_pre=zeros(num_bus+num_gen);
 Y_pre([1:num_gen,num_gen+idx_gen'],[1:num_gen,num_gen+idx_gen'])=[diag((1i*xd_p).^-1) diag(-(1i*xd_p).^-1); diag(-(1i*xd_p).^-1) diag((1i*xd_p).^-1)];
 Y_fault=Y_pre; Y_post=Y_pre;
